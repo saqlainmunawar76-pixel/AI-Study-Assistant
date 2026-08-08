@@ -16,6 +16,34 @@ from utils.styles import inject_css, card, empty_state
 # ---------------- Page Config ----------------
 st.set_page_config(page_title="StudyForge AI", page_icon="✨", layout="wide", initial_sidebar_state="expanded")
 
+# ---------------- Login Gate ----------------
+# Each person who opens the app signs in with just a name — this keeps
+# everyone's materials, quizzes, flashcards, and history separate.
+if "user_name" not in st.session_state:
+    from utils.styles import inject_css as _inject_login_css
+    _inject_login_css("light")
+    st.markdown("""
+    <div style="max-width:420px; margin:80px auto 0 auto; text-align:center;">
+        <h1 style="margin-bottom:4px;">✨ StudyForge AI</h1>
+        <p style="color:var(--text-muted);">Your AI-powered study companion</p>
+    </div>
+    """, unsafe_allow_html=True)
+    _, mid, _ = st.columns([1, 1.2, 1])
+    with mid:
+        with st.form("login_form"):
+            name_input = st.text_input("Enter your name to continue", placeholder="e.g. Saqlain Munawar")
+            submitted = st.form_submit_button("Continue →", type="primary", use_container_width=True)
+        if submitted:
+            if name_input.strip():
+                st.session_state.user_name = name_input.strip()
+                st.rerun()
+            else:
+                st.error("Please enter your name.")
+    st.stop()
+
+from utils import storage as _storage_init
+_storage_init.set_user(st.session_state.user_name)
+
 # ---------------- Session State Defaults ----------------
 if "theme" not in st.session_state:
     st.session_state.theme = storage.get_settings().get("theme", "light")
@@ -69,7 +97,11 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("<div class='sa-divider'></div>", unsafe_allow_html=True)
-    st.caption("Signed in as **Saqlain Munawar**")
+    st.caption(f"Signed in as **{st.session_state.user_name}**")
+    if st.button("🚪 Log out", use_container_width=True):
+        for key in ["user_name", "page", "theme"]:
+            st.session_state.pop(key, None)
+        st.rerun()
 
 if client is None:
     st.error("⚠️ Missing `GEMINI_API_KEY` in Streamlit Secrets. Add it to use AI features.")
@@ -81,10 +113,11 @@ if client is None:
 def render_dashboard():
     hour = datetime.now().hour
     greeting = "Good morning" if hour < 12 else "Good afternoon" if hour < 18 else "Good evening"
+    first_name = st.session_state.user_name.split()[0]
 
     st.markdown(f"""
     <div class="sa-hero">
-        <h1>{greeting}, Saqlain! ✨</h1>
+        <h1>{greeting}, {first_name}! ✨</h1>
         <p>What would you like to study today?</p>
     </div>
     """, unsafe_allow_html=True)
@@ -600,8 +633,8 @@ def render_settings():
     tabs = st.tabs(["Account", "Appearance", "AI Preferences", "Cloud Connections", "Data & Privacy"])
 
     with tabs[0]:
-        st.text_input("Name", value="Saqlain Munawar", disabled=True)
-        st.text_input("Role", value="AI & ML Intern @ Codomax Digital Solutions", disabled=True)
+        st.text_input("Name", value=st.session_state.user_name, disabled=True)
+        st.caption("Your name is used to keep your materials, quizzes, and history separate from other users.")
 
     with tabs[1]:
         theme = st.radio("Theme", ["light", "dark"], index=0 if st.session_state.theme == "light" else 1,

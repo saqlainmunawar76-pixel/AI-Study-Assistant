@@ -94,9 +94,31 @@ def inject_css(theme_name: str = "light"):
             letter-spacing: -0.02em;
             color: var(--text) !important;
         }}
-        p, span, label, .stMarkdown {{
-            color: var(--text);
+
+        /* Force readable text color across every Streamlit widget wrapper —
+           needed because Streamlit's own theme classes otherwise fight
+           our custom dark/light palette and text can become invisible. */
+        p, span, label, li, div, .stMarkdown,
+        [data-testid="stMarkdownContainer"],
+        [data-testid="stCaptionContainer"],
+        [data-testid="stWidgetLabel"],
+        [data-testid="stMetricValue"],
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricDelta"],
+        [data-testid="stExpander"] summary,
+        .stRadio label, .stCheckbox label,
+        .stSelectbox label, .stTextInput label,
+        .stTextArea label, .stSlider label,
+        .streamlit-expanderHeader {{
+            color: var(--text) !important;
         }}
+
+        [data-testid="stCaptionContainer"] p {{
+            color: var(--text-muted) !important;
+        }}
+
+        /* Card values (the big numbers/HTML we render ourselves) already
+           set their own color inline via CSS vars, so they're unaffected. */
 
         /* ---- Cards ---- */
         .sa-card {{
@@ -171,6 +193,10 @@ def inject_css(theme_name: str = "light"):
             border-radius: var(--radius-sm) !important;
             border: 1px solid var(--border) !important;
             background: var(--card-bg) !important;
+            color: var(--text) !important;
+        }}
+        .stTextInput input::placeholder, .stTextArea textarea::placeholder {{
+            color: var(--text-muted) !important;
         }}
 
         /* ---- Empty state ---- */

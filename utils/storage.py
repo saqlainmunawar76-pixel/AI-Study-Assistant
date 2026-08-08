@@ -11,10 +11,31 @@ place that touches storage.
 
 import json
 import os
+import re
 import uuid
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "db.json")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+
+# Current signed-in user (set once via set_user() after login).
+# Each user gets their own JSON file so accounts stay separate.
+_CURRENT_USER = "guest"
+
+
+def set_user(user_id: str):
+    """Switch the active user. Call this right after login."""
+    global _CURRENT_USER
+    safe_id = re.sub(r"[^a-zA-Z0-9_-]", "_", user_id.strip().lower()) or "guest"
+    _CURRENT_USER = safe_id
+
+
+def get_user():
+    return _CURRENT_USER
+
+
+def _db_path():
+    return os.path.join(DATA_DIR, f"db_{_CURRENT_USER}.json")
+
 
 DEFAULT_DB = {
     "materials": [],
@@ -27,16 +48,18 @@ DEFAULT_DB = {
 
 
 def _load():
-    if not os.path.exists(DB_PATH):
+    path = _db_path()
+    if not os.path.exists(path):
         _save(DEFAULT_DB)
-        return DEFAULT_DB.copy()
-    with open(DB_PATH, "r") as f:
+        return json.loads(json.dumps(DEFAULT_DB))  # deep copy
+    with open(path, "r") as f:
         return json.load(f)
 
 
 def _save(db):
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    with open(DB_PATH, "w") as f:
+    path = _db_path()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
         json.dump(db, f, indent=2)
 
 
