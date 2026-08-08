@@ -178,14 +178,39 @@ def inject_css(theme_name: str = "light"):
             font-weight: 600 !important;
             border: 1px solid var(--border) !important;
             transition: all 0.15s ease !important;
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+        }}
+        .stButton > button p, .stButton > button span, .stButton > button div {{
+            color: var(--text) !important;
+        }}
+        .stButton > button:hover {{
+            border-color: var(--primary) !important;
+            color: var(--primary) !important;
+        }}
+        .stButton > button:hover p, .stButton > button:hover span {{
+            color: var(--primary) !important;
         }}
         .stButton > button[kind="primary"] {{
             background: var(--primary) !important;
             border: none !important;
+            color: white !important;
+        }}
+        .stButton > button[kind="primary"] p, .stButton > button[kind="primary"] span {{
+            color: white !important;
         }}
         .stButton > button[kind="primary"]:hover {{
             background: var(--primary-hover) !important;
+            color: white !important;
             transform: translateY(-1px);
+        }}
+        .stButton > button[kind="primary"]:hover p, .stButton > button[kind="primary"]:hover span {{
+            color: white !important;
+        }}
+        .stButton > button:disabled {{
+            background: var(--card-bg) !important;
+            color: var(--text-muted) !important;
+            opacity: 0.6;
         }}
 
         /* ---- Inputs ---- */
